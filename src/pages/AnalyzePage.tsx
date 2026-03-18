@@ -105,7 +105,11 @@ export default function AnalyzePage() {
   const latestMetrics = useAppStore((s) => s.latestMetrics)
   const errorMessage = useAppStore((s) => s.errorMessage)
   const { runAnalysis, stopAnalysis, landmarksRef, metricsRef } = useFaceAnalysis()
-  const audio = useAudioAnalysis()
+  const audioRef = useRef<ReturnType<typeof useAudioAnalysis> | null>(null)
+  if (!audioRef.current) {
+    audioRef.current = useAudioAnalysis()
+  }
+  const audio = audioRef.current
 
   useEffect(() => {
     let s: MediaStream | null = null
@@ -127,7 +131,7 @@ export default function AnalyzePage() {
       s?.getTracks().forEach((t) => t.stop())
       setStream(null)
     }
-  }, [audio, setAnalysisStatus, setError])
+  }, [setAnalysisStatus, setError])
 
   const handleStart = () => {
     if (!videoRef.current || !stream || !canvasRef.current) return
