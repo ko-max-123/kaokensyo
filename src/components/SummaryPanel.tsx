@@ -16,6 +16,18 @@ function formatDuration(ms: number) {
 }
 
 export default function SummaryPanel({ summary, durationMs, score }: SummaryPanelProps) {
+  const speaking = summary.speakingRatePerMin
+  let speakingLabel = 'データ少'
+  if (speaking > 0) {
+    if (speaking < 10) {
+      speakingLabel = `ゆっくりめ（約${speaking.toFixed(1)}回/分）`
+    } else if (speaking <= 25) {
+      speakingLabel = `ちょうどよい（約${speaking.toFixed(1)}回/分）`
+    } else {
+      speakingLabel = `やや早口（約${speaking.toFixed(1)}回/分）`
+    }
+  }
+
   const cards = [
     { label: '計測時間', value: formatDuration(durationMs) },
     { label: '正面顔割合', value: `${(summary.frontFaceRatio * 100).toFixed(1)}%` },
@@ -26,7 +38,7 @@ export default function SummaryPanel({ summary, durationMs, score }: SummaryPane
     { label: '眉の動き平均', value: summary.avgBrowMovement.toFixed(2) },
     { label: '平均声の大きさ', value: (summary.avgVoiceLoudness * 100).toFixed(0) },
     { label: '発話割合', value: `${(summary.speechRatio * 100).toFixed(1)}%` },
-    { label: '推定話速(イベント/分)', value: summary.speakingRatePerMin.toFixed(1) },
+    { label: '話すペース', value: speakingLabel },
   ]
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>
