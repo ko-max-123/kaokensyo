@@ -24,6 +24,9 @@ export default function SummaryPanel({ summary, durationMs, score }: SummaryPane
     { label: '平均目開き', value: (summary.avgEyeOpen * 100).toFixed(0) },
     { label: 'まばたき回数', value: summary.blinkCount },
     { label: '眉の動き平均', value: summary.avgBrowMovement.toFixed(2) },
+    { label: '平均声の大きさ', value: (summary.avgVoiceLoudness * 100).toFixed(0) },
+    { label: '発話割合', value: `${(summary.speechRatio * 100).toFixed(1)}%` },
+    { label: '推定話速(イベント/分)', value: summary.speakingRatePerMin.toFixed(1) },
   ]
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 12, marginBottom: 24 }}>

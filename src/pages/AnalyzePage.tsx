@@ -5,6 +5,7 @@ import type { Session, SessionSample } from '@/types/session'
 import type { AppSettings } from '@/types/settings'
 import type { FaceMetrics } from '@/types/metrics'
 import { useFaceAnalysis } from '@/features/face-analysis/useFaceAnalysis'
+import { useAudioAnalysis } from '@/features/audio/useAudioAnalysis'
 import CameraPreview from '@/components/CameraPreview'
 import OverlayCanvas from '@/components/OverlayCanvas'
 import MetricCard from '@/components/MetricCard'
@@ -31,6 +32,9 @@ function createEmptySample(timestampMs: number): SessionSample {
     rightCornerLift: 0,
     leftBrowRaise: 0,
     rightBrowRaise: 0,
+    voiceLoudness: 0,
+    voiceActive: false,
+    speakingRate: 0,
   }
 }
 
@@ -56,6 +60,19 @@ function computeSummary(samples: SessionSample[], settings: AppSettings) {
     prevClosed = closed
   }
   const avgBrow = n ? valid.reduce((a, s) => a + (s.leftBrowRaise + s.rightBrowRaise) / 2, 0) / n : 0
+  // 音声集計
+  const voiced = samples.filter((s) => s.voiceActive)
+  const loudnessValues = voiced.map((s) => s.voiceLoudness)
+  const avgVoiceLoudness = loudnessValues.length ? loudnessValues.reduce((a, v) => a + v, 0) / loudnessValues.length : 0
+  const meanL = avgVoiceLoudness
+  const voiceLoudnessVar =
+    loudnessValues.length > 1
+      ? loudnessValues.reduce((a, v) => a + (v - meanL) * (v - meanL), 0) / loudnessValues.length
+      : 0
+  const speechRatio = total ? voiced.length / total : 0
+  const speakingRatePerMin = total && samples[total - 1]
+    ? (samples[total - 1]!.speakingRate / ((samples[total - 1]!.timestampMs - samples[0]!.timestampMs) / 60_000 || 1))
+    : 0
   const notes: string[] = []
   if (total > 0 && n / total < 0.5) notes.push('顔が検出されない時間が多めでした')
   return {
@@ -70,6 +87,10 @@ function computeSummary(samples: SessionSample[], settings: AppSettings) {
     avgEyeOpen: avgEye,
     blinkCount,
     avgBrowMovement: avgBrow,
+    avgVoiceLoudness,
+    voiceLoudnessVar,
+    speechRatio,
+    speakingRatePerMin,
     notes,
   }
 }
@@ -84,11 +105,12 @@ export default function AnalyzePage() {
   const latestMetrics = useAppStore((s) => s.latestMetrics)
   const errorMessage = useAppStore((s) => s.errorMessage)
   const { runAnalysis, stopAnalysis, landmarksRef, metricsRef } = useFaceAnalysis()
+  const audio = useAudioAnalysis()
 
   useEffect(() => {
     let s: MediaStream | null = null
     navigator.mediaDevices
-      .getUserMedia({ video: { width: 640, height: 480 } })
+      .getUserMedia({ video: { width: 640, height: 480 }, audio: true })
       .then((mediaStream) => {
         s = mediaStream
         setStream(mediaStream)
@@ -101,10 +123,11 @@ export default function AnalyzePage() {
         setAnalysisStatus('error')
       })
     return () => {
+      audio.stop()
       s?.getTracks().forEach((t) => t.stop())
       setStream(null)
     }
-  }, [setAnalysisStatus, setError])
+  }, [audio, setAnalysisStatus, setError])
 
   const handleStart = () => {
     if (!videoRef.current || !stream || !canvasRef.current) return
@@ -120,7 +143,8 @@ export default function AnalyzePage() {
       const nowMs = Date.now()
       if (now - lastLogTime >= intervalMs) {
         lastLogTime = now
-        const sample = metrics
+        const audioMetrics = audio.metricsRef.current
+        const base = metrics
           ? {
               timestampMs: nowMs,
               faceDetected: true,
@@ -141,15 +165,23 @@ export default function AnalyzePage() {
               rightBrowRaise: metrics.rightBrowRaise,
             }
           : createEmptySample(nowMs)
+        const sample: SessionSample = {
+          ...base,
+          voiceLoudness: audioMetrics?.loudness ?? 0,
+          voiceActive: audioMetrics?.isSpeaking ?? false,
+          speakingRate: audioMetrics?.speakingEvents ?? 0,
+        }
         samplesRef.current.push(sample)
       }
     }
 
+    audio.start(stream)
     runAnalysis(videoRef.current, canvasRef.current, stream, onFrame)
   }
 
   const handleStop = async () => {
     stopAnalysis()
+    audio.stop()
     setAnalysisStatus('stopped')
     const samples = [...samplesRef.current]
     if (samples.length === 0) return

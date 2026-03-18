@@ -16,6 +16,10 @@ export interface SessionSample {
   rightCornerLift: number
   leftBrowRaise: number
   rightBrowRaise: number
+  // 音声指標
+  voiceLoudness: number // 0-1 正規化音量
+  voiceActive: boolean // 発話フレームかどうか
+  speakingRate: number // 推定話速（1分あたりの発話イベント数の近似）
 }
 
 export interface SessionSummary {
@@ -30,6 +34,11 @@ export interface SessionSummary {
   avgEyeOpen: number
   blinkCount: number
   avgBrowMovement: number
+  // 音声集計
+  avgVoiceLoudness: number
+  voiceLoudnessVar: number
+  speechRatio: number // 発話していた時間の割合
+  speakingRatePerMin: number
   notes: string[]
 }
 
