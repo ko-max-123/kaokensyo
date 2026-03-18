@@ -77,20 +77,29 @@ git push -u origin main
 
 ## 4. 同じドメイン（pages.dev）で `/api` を動かす（推奨）
 
-サイトを `https://＜プロジェクト名＞.pages.dev` だけで使いたい場合は、**その Pages のドメイン** に Worker を紐付けます。
+`pages.dev` は通常「あなたの Zone（管理ドメイン）」ではないため、**Worker の Route 追加で Zone が選べず設定できない**ことがあります（今回の詰まりポイント）。
 
-1. Cloudflare Dashboard の **Workers & Pages** を開く。
-2. 左の **Workers** 一覧から、先ほどデプロイした **face-habit-viewer-api** を開く。
-3. **Settings** → **Triggers** を開く。
-4. **Routes** の **Add route** を押す。
-5. 次のように設定する。
-   - **Route**: `*<プロジェクト名>.pages.dev/api/*`  
-     例: `*face-habit-viewer.pages.dev/api/*`  
-     （ホスト名は自分の Pages の URL に合わせる）
-   - **Zone** で `pages.dev` が選べる場合は選ぶ。選べない場合は、**Workers & Pages** の **Pages** 側で、該当プロジェクトの **Settings** → **Functions** や **Worker のバインド** など、同一ドメインで Worker を動かす項目がないか確認する。
-6. **Save** する。
+その場合は **Cloudflare Pages Functions を `/api/*` のプロキシ**として使い、同一ドメインを実現します（独自ドメイン不要）。
 
-これで、ブラウザで `https://＜プロジェクト名＞.pages.dev` を開いたとき、`/api/health` や `/api/version` が同じドメインで Worker に渡り、CORS を気にせず利用できます。
+### 4-A. Pages Functions プロキシ（推奨・Zone不要）
+
+このリポジトリには、既に `functions/api/[...path].ts` を追加済みです。  
+`https://＜プロジェクト名＞.pages.dev/api/*` へのアクセスを、Worker（`workers.dev`）へ転送します。
+
+#### 設定手順
+
+1. Cloudflare Dashboard → **Workers & Pages** → **Pages** → 対象プロジェクトを開く
+2. **Settings** → **Environment variables**（または **Variables**）を開く
+3. 変数を追加
+   - **Name**: `WORKER_API_ORIGIN`
+   - **Value**: `https://face-habit-viewer-api.<あなたのサブドメイン>.workers.dev`
+4. 保存して再デプロイ（必要なら）
+
+これで、ブラウザから `https://＜プロジェクト名＞.pages.dev/api/health` を開くと、Worker の `/api/health` へ転送されます。
+
+### 4-B. Worker Route（Zone が選べる場合のみ）
+
+もし Cloudflare の UI で `pages.dev` の Zone が選べる場合は、従来どおり Worker の Route を追加しても構いません。
 
 ---
 
