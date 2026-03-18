@@ -33,8 +33,12 @@ export const onRequest: PagesFunction<Env> = async (ctx) => {
   }
 
   const url = new URL(req.url)
-  // /api/* を Worker 側の /api/* にそのまま転送
-  const target = new URL(url.pathname + url.search, workerOrigin)
+  // /api/<任意階層> を Worker 側の /api/<任意階層> にそのまま転送
+  // multipath の場合 ctx.params.path は string[] になる
+  const segs = (ctx.params.path ?? []) as string[] | string
+  const tail = Array.isArray(segs) ? segs.join('/') : segs
+  const pathname = tail ? `/api/${tail}` : '/api'
+  const target = new URL(pathname + url.search, workerOrigin)
 
   const upstream = await fetch(target.toString(), {
     method: req.method,

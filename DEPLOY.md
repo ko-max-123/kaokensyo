@@ -83,7 +83,7 @@ git push -u origin main
 
 ### 4-A. Pages Functions プロキシ（推奨・Zone不要）
 
-このリポジトリには、既に `functions/api/[...path].ts` を追加済みです。  
+このリポジトリには、既に `functions/api/[[path]].ts`（および `functions/api/index.ts`）を追加済みです。  
 `https://＜プロジェクト名＞.pages.dev/api/*` へのアクセスを、Worker（`workers.dev`）へ転送します。
 
 #### 設定手順
