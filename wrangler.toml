@@ -1,0 +1,6 @@
+name = "face-habit-viewer-api"
+main = "worker/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+APP_VERSION = "0.1.0"

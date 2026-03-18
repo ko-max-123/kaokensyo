@@ -1,0 +1,47 @@
+# --- 依存関係 ---
+node_modules/
+
+# --- ビルド成果物 ---
+dist/
+dist-ssr/
+build/
+*.tsbuildinfo
+
+# --- Vite / ツールのキャッシュ ---
+.vite/
+.cache/
+
+# --- Cloudflare Wrangler（ローカル・秘密）---
+.wrangler/
+.dev.vars
+.dev.vars.*
+
+# --- 環境変数・秘密（絶対に push しない）---
+.env
+.env.*
+!.env.example
+
+# --- テスト・カバレッジ ---
+coverage/
+*.lcov
+
+# --- ログ ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- エディタ（個人設定は push 不要が多い）---
+.idea/
+*.swp
+*.swo
+*~
+
+# --- 旧サブプロジェクト（ルートが本番アプリ。誤って二重コミットしないよう除外）---
+/web/

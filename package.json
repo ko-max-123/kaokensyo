@@ -1,0 +1,38 @@
+{
+  "name": "face-habit-viewer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "worker:dev": "wrangler dev",
+    "worker:deploy": "wrangler deploy",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^0.10.14",
+    "chart.js": "^4.4.6",
+    "idb": "^8.0.0",
+    "react": "^18.3.1",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.0.1",
+    "zustand": "^5.0.2"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.29.1",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^25.0.1",
+    "typescript": "~5.6.3",
+    "vite": "^6.0.1",
+    "vitest": "^2.1.6",
+    "wrangler": "^4.75.0"
+  }
+}
