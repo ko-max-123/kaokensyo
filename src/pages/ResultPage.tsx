@@ -6,6 +6,7 @@ import type { Session } from '@/types/session'
 import SummaryPanel from '@/components/SummaryPanel'
 import LineChartPanel from '@/components/LineChartPanel'
 import { exportSessionCSV, exportSessionJSON } from '@/features/export/exportSession'
+import { computeSessionScore } from '@/lib/math/sessionScore'
 
 export default function ResultPage() {
   const { sessionId } = useParams<{ sessionId: string }>()
@@ -33,11 +34,18 @@ export default function ResultPage() {
 
   const handleDownloadCSV = () => exportSessionCSV(session)
   const handleDownloadJSON = () => exportSessionJSON(session)
+  const score = computeSessionScore(session)
 
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
       <h1 style={{ fontSize: 24, marginBottom: 16 }}>セッション結果</h1>
-      <SummaryPanel summary={session.summary} durationMs={session.durationMs} validCount={session.validSampleCount} totalCount={session.sampleCount} />
+      <SummaryPanel
+        summary={session.summary}
+        durationMs={session.durationMs}
+        validCount={session.validSampleCount}
+        totalCount={session.sampleCount}
+        score={score}
+      />
       <LineChartPanel samples={session.samples} />
       <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
         <button onClick={handleDownloadCSV} style={{ padding: '10px 20px', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 8 }}>
