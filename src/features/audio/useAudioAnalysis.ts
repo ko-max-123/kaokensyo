@@ -10,8 +10,7 @@ export function useAudioAnalysis() {
   let analyser: AnalyserNode | null = null
   let source: MediaStreamAudioSourceNode | null = null
   let rafId: number | null = null
-  let speaking = false
-  let speakingEvents = 0
+  let speakingFrames = 0
 
   const stop = () => {
     if (rafId != null) {
@@ -24,8 +23,7 @@ export function useAudioAnalysis() {
     audioContext?.close()
     audioContext = null
     metricsRef.current = null
-    speaking = false
-    speakingEvents = 0
+    speakingFrames = 0
   }
 
   const start = async (stream: MediaStream) => {
@@ -53,14 +51,13 @@ export function useAudioAnalysis() {
       const loudness = Math.max(0, Math.min(1, rms * 10))
       const speakingThreshold = 0.08
       const nowSpeaking = loudness >= speakingThreshold
-      if (nowSpeaking && !speaking) {
-        speakingEvents++
+      if (nowSpeaking) {
+        speakingFrames++
       }
-      speaking = nowSpeaking
       metricsRef.current = {
         loudness,
         isSpeaking: nowSpeaking,
-        speakingEvents,
+        speakingEvents: speakingFrames,
       }
       rafId = requestAnimationFrame(tick)
     }

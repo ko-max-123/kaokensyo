@@ -70,9 +70,11 @@ function computeSummary(samples: SessionSample[], settings: AppSettings) {
       ? loudnessValues.reduce((a, v) => a + (v - meanL) * (v - meanL), 0) / loudnessValues.length
       : 0
   const speechRatio = total ? voiced.length / total : 0
-  const speakingRatePerMin = total && samples[total - 1]
-    ? (samples[total - 1]!.speakingRate / ((samples[total - 1]!.timestampMs - samples[0]!.timestampMs) / 60_000 || 1))
-    : 0
+  const speakingFrames = samples.length ? samples[samples.length - 1]!.speakingRate : 0
+  const speakingRatePerMin =
+    total && samples[total - 1]
+      ? speakingFrames / ((samples[total - 1]!.timestampMs - samples[0]!.timestampMs) / 60_000 || 1)
+      : 0
   const notes: string[] = []
   if (total > 0 && n / total < 0.5) notes.push('顔が検出されない時間が多めでした')
   return {

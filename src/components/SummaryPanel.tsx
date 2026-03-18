@@ -19,12 +19,12 @@ export default function SummaryPanel({ summary, durationMs, score }: SummaryPane
   const speaking = summary.speakingRatePerMin
   let speakingLabel = 'データ少'
   if (speaking > 0) {
-    if (speaking < 10) {
-      speakingLabel = `ゆっくりめ（約${speaking.toFixed(1)}回/分）`
-    } else if (speaking <= 25) {
-      speakingLabel = `ちょうどよい（約${speaking.toFixed(1)}回/分）`
+    if (speaking < 200) {
+      speakingLabel = `ゆっくりめ（内部指数 ${speaking.toFixed(0)}）`
+    } else if (speaking <= 500) {
+      speakingLabel = `ちょうどよい（内部指数 ${speaking.toFixed(0)}）`
     } else {
-      speakingLabel = `やや早口（約${speaking.toFixed(1)}回/分）`
+      speakingLabel = `やや早口（内部指数 ${speaking.toFixed(0)}）`
     }
   }
 
