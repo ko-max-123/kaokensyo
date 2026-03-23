@@ -14,7 +14,14 @@ const OverlayCanvas = forwardRef<HTMLCanvasElement, OverlayCanvasProps>(
         ref={ref}
         width={width}
         height={height}
-        style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none' }}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: 'auto',
+          pointerEvents: 'none',
+        }}
       />
     )
   }

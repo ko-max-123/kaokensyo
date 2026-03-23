@@ -30,6 +30,10 @@ export function useFaceAnalysis() {
             baseOptions: { modelAssetPath: MODEL_URL },
             runningMode: 'VIDEO',
             numFaces: 1,
+            // スマホ・暗所でも検出しやすくする（誤検出はやや増えるが未検出を優先）
+            minFaceDetectionConfidence: 0.35,
+            minFacePresenceConfidence: 0.35,
+            minTrackingConfidence: 0.35,
           })
         }
       } catch (e) {
@@ -44,9 +48,18 @@ export function useFaceAnalysis() {
       lastVideoTimeRef.current = -1
 
       const tick = () => {
-        if (!runningRef.current || !video.videoWidth) {
+        if (!runningRef.current) {
           rafRef.current = requestAnimationFrame(tick)
           return
+        }
+        // スマホはメタデータ読み込みまで videoWidth が 0 のことがある
+        if (!video.videoWidth) {
+          rafRef.current = requestAnimationFrame(tick)
+          return
+        }
+        if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+          canvas.width = video.videoWidth
+          canvas.height = video.videoHeight
         }
         const videoTime = video.currentTime * 1000
         if (videoTime !== lastVideoTimeRef.current) {

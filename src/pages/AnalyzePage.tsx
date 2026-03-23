@@ -10,6 +10,7 @@ import CameraPreview from '@/components/CameraPreview'
 import OverlayCanvas from '@/components/OverlayCanvas'
 import MetricCard from '@/components/MetricCard'
 import { saveSession, getAllSessions, getSettings, deleteSession } from '@/lib/storage/db'
+import { getCameraAndMicStream } from '@/lib/camera/getCameraStream'
 
 const APP_VERSION = '0.1.0'
 
@@ -103,6 +104,7 @@ export default function AnalyzePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const samplesRef = useRef<SessionSample[]>([])
   const [stream, setStream] = useState<MediaStream | null>(null)
+  const [videoDims, setVideoDims] = useState({ w: 640, h: 480 })
   const { analysisStatus, setAnalysisStatus, setError, setCurrentSession, setLatestMetrics, settings, setHistoryList } = useAppStore()
   const latestMetrics = useAppStore((s) => s.latestMetrics)
   const errorMessage = useAppStore((s) => s.errorMessage)
@@ -115,17 +117,19 @@ export default function AnalyzePage() {
 
   useEffect(() => {
     let s: MediaStream | null = null
-    navigator.mediaDevices
-      .getUserMedia({ video: { width: 640, height: 480 }, audio: true })
+    getCameraAndMicStream()
       .then((mediaStream) => {
         s = mediaStream
         setStream(mediaStream)
-        if (videoRef.current) videoRef.current.srcObject = mediaStream
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream
+          videoRef.current.play().catch(() => {})
+        }
         setAnalysisStatus('camera_ready')
         setError(null)
       })
       .catch(() => {
-        setError('カメラへのアクセスが拒否されました')
+        setError('カメラ・マイクへのアクセスが拒否されたか、利用できません')
         setAnalysisStatus('error')
       })
     return () => {
@@ -230,8 +234,16 @@ export default function AnalyzePage() {
     <div style={{ maxWidth: 900, margin: '0 auto', padding: 24 }}>
       <h1 style={{ fontSize: 24, marginBottom: 16 }}>解析</h1>
       <div style={{ position: 'relative', display: 'inline-block', marginBottom: 16 }}>
-        <CameraPreview ref={videoRef} stream={stream} isRunning={analysisStatus === 'running'} errorMessage={errorMessage} />
-        {settings.overlayVisible && <OverlayCanvas ref={canvasRef} landmarksRef={landmarksRef} width={640} height={480} />}
+        <CameraPreview
+          ref={videoRef}
+          stream={stream}
+          isRunning={analysisStatus === 'running'}
+          errorMessage={errorMessage}
+          onVideoDimensions={(w, h) => setVideoDims({ w, h })}
+        />
+        {settings.overlayVisible && (
+          <OverlayCanvas ref={canvasRef} landmarksRef={landmarksRef} width={videoDims.w} height={videoDims.h} />
+        )}
       </div>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 16 }}>
         <MetricCard label="顔向き" value={metrics ? `${metrics.faceYaw.toFixed(0)}° / ${metrics.facePitch.toFixed(0)}°` : '-'} />
